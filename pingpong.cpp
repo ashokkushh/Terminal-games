@@ -167,7 +167,7 @@ int main() {
    
     }
     endwin();
-    printf("Thanks for playing.\n");
+    printf("Thanks for playing!\n");
     return 0;
 }
 
