@@ -8,12 +8,12 @@ int paddle_x, paddle_width = 14;
 int ball_x, ball_y, ball_dx = 1, ball_dy = -1;
 bool gameOver = false;
 int score = 0;
-
+std::string player_name = "Player";
 void initGame() {
-    initscr();
-    noecho();
+   // initscr();
+  //  noecho();
     curs_set(FALSE);
-    cbreak();
+//    cbreak();
     timeout(100);  // Non-blocking input with 100ms delay
     keypad(stdscr, TRUE);
 
@@ -37,7 +37,8 @@ void draw() {
   	 //  mvprintw(0, i, "#");
           // mvprintw(max_y - 1, i, "#");
    // }
-    std::string scoreText = "hits: " + std::to_string(score);
+    std::string scoreText = player_name + " :: hits: " + std::to_string(score);
+//    std::string scoreText = "hits: " + std::to_string(score);
     mvprintw(max_y - 1, max_x - scoreText.size() - 2, "%s", scoreText.c_str());
 
     refresh();
@@ -76,7 +77,8 @@ bool showGameOverScreen() {
     std::string msg2   = "=                   [Game Over]                  =";
     std::string msg3   = "=       Press [r] to restart or [q] to quit      =";
     std::string blank  = "=                                                =";
-    std::string msg4   = "=                Final hits: " + std::to_string(score) + "  =" ;
+//    std::string msg4   = "=                Final hits: " + std::to_string(score) + "  =" ;
+    std::string msg4   = "=     Final hits: " + std::to_string(score) + " by " + player_name + "  =";
 
     while(msg4.size() < border.size() -1){
     	msg4.insert(msg4.size()-1," ");
@@ -112,7 +114,23 @@ void handleInput() {
     else if (ch == 'q')
         gameOver = true;
 }
+void askUserName() {
+    echo();  // Enable input echo
+    curs_set(TRUE);  // Show cursor
+    clear();
+
+    std::string prompt = "Enter your terminal handle (name): ";
+    mvprintw(5, 5, "%s", prompt.c_str());
+    char nameBuffer[50];
+    getnstr(nameBuffer, 49);
+    player_name = std::string(nameBuffer);
+
+    noecho();         // Hide input again
+    curs_set(FALSE);  // Hide cursor
+}
+
 void showStartScreen() {
+    askUserName();
     clear();
 
     std::string border = "=================================================";
@@ -150,22 +168,32 @@ void showStartScreen() {
 
 int main() {
     bool play = true;
-   // initGame();
-   // showStartScreen();
-    while(play){
-    initGame();
-    showStartScreen();
-    gameOver = false;
-    score = 0;
-    while (!gameOver) {
-        draw();
-        handleInput();
-        update();
-        usleep(5000);  // Delay for smoother motion
+
+    initscr();        // Only call once
+    cbreak();
+    noecho();
+    keypad(stdscr, TRUE);
+    curs_set(TRUE);   // Show cursor for name input
+    askUserName();    // Blocks correctly now
+    curs_set(FALSE);  // Hide after name input
+
+    while (play) {
+        initGame();         // Setup game state (without initscr)
+        showStartScreen();  // Show welcome screen
+
+        gameOver = false;
+        score = 0;
+
+        while (!gameOver) {
+            draw();
+            handleInput();
+            update();
+            usleep(5000);
+        }
+
+        play = showGameOverScreen();  // ask to restart or quit
     }
-    play = showGameOverScreen();
-   
-    }
+
     endwin();
     printf("Thanks for playing!\n");
     return 0;
